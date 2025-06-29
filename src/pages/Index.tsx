@@ -1,12 +1,32 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState, useEffect } from 'react';
+import { ArrowRight, Phone, Mail, MapPin, Star, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import Hero from '@/components/Hero';
+import Services from '@/components/Services';
+import Portfolio from '@/components/Portfolio';
+import About from '@/components/About';
+import Contact from '@/components/Contact';
+import Navigation from '@/components/Navigation';
 
 const Index = () => {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-stone-100">
+      <Navigation />
+      <Hero scrollY={scrollY} />
+      <Services />
+      <Portfolio />
+      <About />
+      <Contact />
     </div>
   );
 };
