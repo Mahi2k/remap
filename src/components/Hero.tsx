@@ -27,7 +27,7 @@ const Hero = ({ scrollY }: HeroProps) => {
       {/* Content */}
       <div className="relative z-20 text-center text-white px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in opacity-0 [animation-delay:0.5s] [animation-fill-mode:forwards]">
-          Transform Your
+          Remap - Transform Your
           <span className="block text-amber-400">Living Space</span>
         </h1>
         
