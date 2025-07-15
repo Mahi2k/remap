@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X, MapPin } from 'lucide-react';
+import { GetQuoteDialog } from './GetQuoteDialog';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,9 +51,11 @@ const Navigation = () => {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
-            <Button className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-full transition-all duration-300 hover:scale-105">
-              Get Quote
-            </Button>
+            <GetQuoteDialog>
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full transition-all duration-300 hover:scale-105">
+                Get Quote
+              </Button>
+            </GetQuoteDialog>
           </div>
 
           {/* Mobile Menu Button */}
@@ -81,9 +84,11 @@ const Navigation = () => {
                 {item.name}
               </a>
             ))}
-            <Button className="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white rounded-full">
-              Get Quote
-            </Button>
+            <GetQuoteDialog>
+              <Button className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
+                Get Quote
+              </Button>
+            </GetQuoteDialog>
           </div>
         )}
       </div>

@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { ContactForm } from './ContactForm';
 
 const Contact = () => {
   const contactInfo = [
@@ -52,57 +53,7 @@ const Contact = () => {
             <Card className="bg-white/10 backdrop-blur-sm border-white/20">
               <CardContent className="p-8">
                 <h3 className="text-2xl font-bold mb-6 text-white">Send us a message</h3>
-                <form className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-stone-300 mb-2">First Name</label>
-                      <Input 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-stone-400"
-                        placeholder="Your first name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-stone-300 mb-2">Last Name</label>
-                      <Input 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-stone-400"
-                        placeholder="Your last name"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-stone-300 mb-2">Email</label>
-                    <Input 
-                      type="email"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-stone-400"
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-stone-300 mb-2">Project Type</label>
-                    <Input 
-                      className="bg-white/10 border-white/20 text-white placeholder:text-stone-400"
-                      placeholder="e.g., Living Room Redesign, Full Home Renovation"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-stone-300 mb-2">Message</label>
-                    <Textarea 
-                      rows={5}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-stone-400"
-                      placeholder="Tell us about your project, vision, and any specific requirements..."
-                    />
-                  </div>
-                  
-                  <Button 
-                    size="lg" 
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105"
-                  >
-                    Send Message
-                  </Button>
-                </form>
+                <ContactForm />
               </CardContent>
             </Card>
           </div>
