@@ -17,11 +17,11 @@ const About = () => {
           {/* Left Content */}
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-stone-800 mb-6">
-              About Urban<span className="text-amber-600">Nest</span>
+              About <span className="text-amber-600">Remap</span>
             </h2>
             
             <p className="text-lg text-stone-600 mb-6 leading-relaxed">
-              Founded with a passion for creating beautiful, functional spaces, Urban Nest has been 
+              Founded with a passion for creating beautiful, functional spaces, Remap has been 
               transforming homes and commercial spaces for over a decade. Our team of experienced 
               designers combines creativity with practicality to deliver interiors that truly reflect 
               our clients' personalities and lifestyles.

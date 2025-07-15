@@ -147,7 +147,7 @@ const Contact = () => {
         {/* Footer */}
         <div className="border-t border-white/20 mt-16 pt-8 text-center">
           <p className="text-stone-400">
-            © 2024 Urban Nest Interior Design. All rights reserved.
+            © 2024 Remap Interior Design. All rights reserved.
           </p>
         </div>
       </div>
