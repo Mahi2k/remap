@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogOut, Eye, EyeOff, Trash2, Plus } from "lucide-react";
+import { AdminSidebar } from "@/components/AdminSidebar";
+import { UsersList, UserRolesManager } from "@/components/admin/UserManagement";
+import { Settings } from "@/components/admin/Settings";
 import type { Database } from "@/integrations/supabase/types";
 
 type HeroContent = Database['public']['Tables']['hero_content']['Row'];
@@ -23,6 +25,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [activeSection, setActiveSection] = useState('hero');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -118,55 +121,61 @@ export default function Admin() {
     return null;
   }
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'hero':
+        return <HeroContentManager content={heroContent} onUpdate={loadAllContent} />;
+      case 'about':
+        return <AboutContentManager content={aboutContent} onUpdate={loadAllContent} />;
+      case 'services':
+        return <ServicesManager services={services} onUpdate={loadAllContent} />;
+      case 'portfolio':
+        return <PortfolioManager items={portfolioItems} onUpdate={loadAllContent} />;
+      case 'contact':
+        return <ContactManager submissions={contactSubmissions} onUpdate={loadAllContent} />;
+      case 'users-list':
+        return <UsersList />;
+      case 'user-roles':
+        return <UserRolesManager />;
+      case 'settings':
+        return <Settings />;
+      default:
+        return <HeroContentManager content={heroContent} onUpdate={loadAllContent} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex">
+      {/* Sidebar */}
+      <AdminSidebar 
+        activeSection={activeSection} 
+        onSectionChange={setActiveSection} 
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Admin Dashboard
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Welcome back, {user?.email}
-            </p>
+        <div className="bg-card border-b border-border p-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Welcome back, {user?.email}
+              </p>
+            </div>
+            <Button variant="outline" onClick={handleSignOut} className="gap-2">
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
           </div>
-          <Button variant="outline" onClick={handleSignOut} className="gap-2">
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </Button>
         </div>
-
-        {/* Main Content */}
-        <Tabs defaultValue="hero" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="hero">Hero</TabsTrigger>
-            <TabsTrigger value="about">About</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-            <TabsTrigger value="contact">Contact</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="hero">
-            <HeroContentManager content={heroContent} onUpdate={loadAllContent} />
-          </TabsContent>
-
-          <TabsContent value="about">
-            <AboutContentManager content={aboutContent} onUpdate={loadAllContent} />
-          </TabsContent>
-
-          <TabsContent value="services">
-            <ServicesManager services={services} onUpdate={loadAllContent} />
-          </TabsContent>
-
-          <TabsContent value="portfolio">
-            <PortfolioManager items={portfolioItems} onUpdate={loadAllContent} />
-          </TabsContent>
-
-          <TabsContent value="contact">
-            <ContactManager submissions={contactSubmissions} onUpdate={loadAllContent} />
-          </TabsContent>
-        </Tabs>
+        
+        {/* Content Area */}
+        <div className="flex-1 p-6 overflow-auto">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );
