@@ -1,55 +1,41 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+
+type PortfolioItem = Tables<'portfolio_items'>;
 
 const Portfolio = () => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [projects, setProjects] = useState<PortfolioItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const projects = [
-    {
-      id: 1,
-      title: "Modern Living Room",
-      category: "living",
-      image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Contemporary design with warm neutral tones"
-    },
-    {
-      id: 2,
-      title: "Elegant Bedroom Suite",
-      category: "bedroom",
-      image: "https://images.unsplash.com/photo-1631889993959-41b4e9c19697?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Luxurious comfort meets sophisticated style"
-    },
-    {
-      id: 3,
-      title: "Gourmet Kitchen",
-      category: "kitchen",
-      image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Functional beauty for culinary enthusiasts"
-    },
-    {
-      id: 4,
-      title: "Home Office Sanctuary",
-      category: "office",
-      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Productive workspace with inspiring design"
-    },
-    {
-      id: 5,
-      title: "Cozy Reading Nook",
-      category: "living",
-      image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Perfect retreat for quiet moments"
-    },
-    {
-      id: 6,
-      title: "Spa-Like Bathroom",
-      category: "bathroom",
-      image: "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Serene sanctuary for daily rituals"
-    }
-  ];
+  useEffect(() => {
+    const fetchPortfolioItems = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('portfolio_items')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching portfolio items:', error);
+          return;
+        }
+
+        setProjects(data || []);
+      } catch (error) {
+        console.error('Error fetching portfolio items:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolioItems();
+  }, []);
 
   const filters = [
     { key: 'all', label: 'All Projects' },
@@ -96,30 +82,37 @@ const Portfolio = () => {
         </div>
 
         {/* Portfolio Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project, index) => (
-            <Card 
-              key={project.id}
-              className="group overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-none animate-fade-in"
-              style={{
-                animationDelay: `${index * 0.1}s`
-              }}
-            >
-              <div className="relative overflow-hidden">
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                  <p className="text-stone-200">{project.description}</p>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+            <p className="mt-4 text-stone-600">Loading portfolio...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProjects.map((project, index) => (
+              <Card 
+                key={project.id}
+                className="group overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-none animate-fade-in"
+                style={{
+                  animationDelay: `${index * 0.1}s`
+                }}
+              >
+                <div className="relative overflow-hidden">
+                  <img
+                    src={project.image_url || '/placeholder.svg'}
+                    alt={project.title}
+                    className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                    <p className="text-stone-200">{project.description}</p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
         <div className="text-center mt-12">
           <Button 
