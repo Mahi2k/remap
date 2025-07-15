@@ -56,6 +56,13 @@ const Navigation = () => {
                 Get Quote
               </Button>
             </GetQuoteDialog>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/auth'}
+              className="px-6 py-2 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+            >
+              Admin
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -89,6 +96,13 @@ const Navigation = () => {
                 Get Quote
               </Button>
             </GetQuoteDialog>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/auth'}
+              className="w-full mt-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground rounded-full"
+            >
+              Admin
+            </Button>
           </div>
         )}
       </div>
