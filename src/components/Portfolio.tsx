@@ -11,42 +11,42 @@ const Portfolio = () => {
       id: 1,
       title: "Modern Living Room",
       category: "living",
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       description: "Contemporary design with warm neutral tones"
     },
     {
       id: 2,
       title: "Elegant Bedroom Suite",
       category: "bedroom",
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1631889993959-41b4e9c19697?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       description: "Luxurious comfort meets sophisticated style"
     },
     {
       id: 3,
       title: "Gourmet Kitchen",
       category: "kitchen",
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       description: "Functional beauty for culinary enthusiasts"
     },
     {
       id: 4,
       title: "Home Office Sanctuary",
       category: "office",
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       description: "Productive workspace with inspiring design"
     },
     {
       id: 5,
       title: "Cozy Reading Nook",
       category: "living",
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       description: "Perfect retreat for quiet moments"
     },
     {
       id: 6,
       title: "Spa-Like Bathroom",
       category: "bathroom",
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       description: "Serene sanctuary for daily rituals"
     }
   ];
