@@ -7,6 +7,12 @@ interface HeroProps {
 }
 
 const Hero = ({ scrollY }: HeroProps) => {
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background with Parallax Effect */}
@@ -39,6 +45,7 @@ const Hero = ({ scrollY }: HeroProps) => {
           <Button 
             size="lg" 
             className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 group"
+            onClick={() => scrollToSection('portfolio')}
           >
             View Our Work
             <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -48,6 +55,7 @@ const Hero = ({ scrollY }: HeroProps) => {
             variant="outline" 
             size="lg" 
             className="border-2 border-white text-black bg-white hover:bg-black hover:text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105"
+            onClick={() => scrollToSection('contact')}
           >
             Schedule Consultation
           </Button>
