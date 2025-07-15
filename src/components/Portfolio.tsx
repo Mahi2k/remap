@@ -11,7 +11,7 @@ const Portfolio = () => {
       id: 1,
       title: "Modern Living Room",
       category: "living",
-      image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       description: "Contemporary design with warm neutral tones"
     },
     {
