@@ -290,8 +290,16 @@ export function UsersList() {
   );
 }
 
+interface ExtendedUserRole extends UserRole {
+  created_at: string;
+  profiles?: {
+    email: string;
+    display_name: string | null;
+  };
+}
+
 export function UserRolesManager() {
-  const [roles, setRoles] = useState<UserRole[]>([]);
+  const [roles, setRoles] = useState<ExtendedUserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -302,18 +310,28 @@ export function UserRolesManager() {
   const loadRoles = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Get user roles
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          *,
-          profiles!user_roles_user_id_fkey (
-            email,
-            display_name
-          )
-        `);
+        .select('*');
 
-      if (error) throw error;
-      setRoles(data || []);
+      if (rolesError) throw rolesError;
+
+      // Get profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, email, display_name');
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const rolesWithProfiles = userRoles?.map(role => ({
+        ...role,
+        profiles: profiles?.find(profile => profile.user_id === role.user_id)
+      })) || [];
+
+      setRoles(rolesWithProfiles);
     } catch (error) {
       console.error('Error loading roles:', error);
       toast({
@@ -355,24 +373,24 @@ export function UserRolesManager() {
             <TableBody>
               {roles.map((roleAssignment) => (
                 <TableRow key={roleAssignment.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">
-                        {(roleAssignment as any).profiles?.email || 'Unknown'}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {(roleAssignment as any).profiles?.display_name || 'No display name'}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={roleAssignment.role === 'admin' ? 'default' : 'secondary'}>
-                      {roleAssignment.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date().toLocaleDateString()}
-                  </TableCell>
+                   <TableCell>
+                     <div>
+                       <div className="font-medium">
+                         {roleAssignment.profiles?.email || 'Unknown'}
+                       </div>
+                       <div className="text-sm text-muted-foreground">
+                         {roleAssignment.profiles?.display_name || 'No display name'}
+                       </div>
+                     </div>
+                   </TableCell>
+                   <TableCell>
+                     <Badge variant={roleAssignment.role === 'admin' ? 'default' : 'secondary'}>
+                       {roleAssignment.role}
+                     </Badge>
+                   </TableCell>
+                   <TableCell>
+                     {new Date(roleAssignment.created_at).toLocaleDateString()}
+                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
