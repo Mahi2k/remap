@@ -47,7 +47,7 @@ const Hero = ({ scrollY }: HeroProps) => {
           <Button 
             variant="outline" 
             size="lg" 
-            className="border-2 border-white text-white hover:bg-white hover:text-stone-900 px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105"
+            className="border-2 border-white text-black bg-white hover:bg-black hover:text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105"
           >
             Schedule Consultation
           </Button>
