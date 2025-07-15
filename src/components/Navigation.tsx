@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, MapPin } from 'lucide-react';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -31,9 +31,10 @@ const Navigation = () => {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
+            <MapPin className="text-amber-600" size={28} />
             <h1 className="text-2xl font-bold text-stone-800 tracking-wide">
-              Urban<span className="text-amber-600">Nest</span>
+              <span className="text-amber-600">Remap</span>
             </h1>
           </div>
 
