@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, MapPin } from 'lucide-react';
+import { GetQuoteDialog } from './GetQuoteDialog';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -31,9 +32,10 @@ const Navigation = () => {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
+            <MapPin className="text-amber-600" size={28} />
             <h1 className="text-2xl font-bold text-stone-800 tracking-wide">
-              Urban<span className="text-amber-600">Nest</span>
+              <span className="text-amber-600">Remap</span>
             </h1>
           </div>
 
@@ -49,8 +51,17 @@ const Navigation = () => {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
-            <Button className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-full transition-all duration-300 hover:scale-105">
-              Get Quote
+            <GetQuoteDialog>
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full transition-all duration-300 hover:scale-105">
+                Get Quote
+              </Button>
+            </GetQuoteDialog>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/auth'}
+              className="px-6 py-2 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+            >
+              Admin
             </Button>
           </div>
 
@@ -80,8 +91,17 @@ const Navigation = () => {
                 {item.name}
               </a>
             ))}
-            <Button className="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white rounded-full">
-              Get Quote
+            <GetQuoteDialog>
+              <Button className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
+                Get Quote
+              </Button>
+            </GetQuoteDialog>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/auth'}
+              className="w-full mt-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground rounded-full"
+            >
+              Admin
             </Button>
           </div>
         )}
