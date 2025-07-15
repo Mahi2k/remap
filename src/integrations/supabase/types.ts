@@ -44,6 +44,33 @@ export type Database = {
         }
         Relationships: []
       }
+      company_contact_info: {
+        Row: {
+          created_at: string
+          field_name: string
+          field_value: string
+          id: string
+          is_active: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          field_name: string
+          field_value: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          field_value?: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string

@@ -10,7 +10,8 @@ import {
   UserCog,
   Settings,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Phone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const menuItems = [
       { id: "about", label: "About Section", icon: FileText },
       { id: "services", label: "Services", icon: Briefcase },
       { id: "portfolio", label: "Portfolio", icon: Image },
+      { id: "company-contact", label: "Company Contact", icon: Phone },
     ]
   },
   {

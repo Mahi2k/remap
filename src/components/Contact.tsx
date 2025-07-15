@@ -1,38 +1,73 @@
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { ContactForm } from './ContactForm';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+
+type CompanyContactInfo = Database['public']['Tables']['company_contact_info']['Row'];
 
 const Contact = () => {
-  const contactInfo = [
-    {
-      icon: <Phone className="h-6 w-6" />,
-      title: "Phone",
-      details: "+1 (555) 123-4567",
-      action: "tel:+15551234567"
-    },
-    {
-      icon: <Mail className="h-6 w-6" />,
-      title: "Email",
-      details: "hello@urbannest.design",
-      action: "mailto:hello@urbannest.design"
-    },
-    {
-      icon: <MapPin className="h-6 w-6" />,
-      title: "Address",
-      details: "123 Design District, Creative City, CC 12345",
-      action: null
-    },
-    {
-      icon: <Clock className="h-6 w-6" />,
-      title: "Hours",
-      details: "Mon-Fri: 9AM-6PM, Sat: 10AM-4PM",
-      action: null
+  const [contactInfo, setContactInfo] = useState<CompanyContactInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadContactInfo();
+  }, []);
+
+  const loadContactInfo = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('company_contact_info')
+        .select('*')
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('Error loading contact info:', error);
+      } else {
+        setContactInfo(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading contact info:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const getContactIcon = (fieldName: string) => {
+    const icons: { [key: string]: React.ReactNode } = {
+      'phone': <Phone className="h-6 w-6" />,
+      'email': <Mail className="h-6 w-6" />,
+      'address': <MapPin className="h-6 w-6" />,
+      'hours': <Clock className="h-6 w-6" />
+    };
+    return icons[fieldName] || <Phone className="h-6 w-6" />;
+  };
+
+  const getContactAction = (fieldName: string, value: string) => {
+    switch (fieldName) {
+      case 'phone':
+        return `tel:${value.replace(/\D/g, '')}`;
+      case 'email':
+        return `mailto:${value}`;
+      default:
+        return null;
+    }
+  };
+
+  const getFieldLabel = (fieldName: string) => {
+    const labels: { [key: string]: string } = {
+      'phone': 'Phone',
+      'email': 'Email',
+      'address': 'Address',
+      'hours': 'Hours'
+    };
+    return labels[fieldName] || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+  };
 
   return (
     <section id="contact" className="py-20 bg-gradient-to-br from-stone-800 to-stone-900 text-white">
@@ -62,36 +97,45 @@ const Contact = () => {
           <div className="space-y-6">
             <h3 className="text-2xl font-bold mb-6">Get in Touch</h3>
             
-            {contactInfo.map((info, index) => (
-              <Card 
-                key={info.title}
-                className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 hover:-translate-y-1"
-                style={{
-                  animationDelay: `${index * 0.1}s`
-                }}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      {info.icon}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-1">{info.title}</h4>
-                      {info.action ? (
-                        <a 
-                          href={info.action}
-                          className="text-stone-300 hover:text-amber-400 transition-colors duration-300"
-                        >
-                          {info.details}
-                        </a>
-                      ) : (
-                        <p className="text-stone-300">{info.details}</p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {loading ? (
+              <div className="text-center text-stone-300">Loading contact information...</div>
+            ) : contactInfo.length === 0 ? (
+              <div className="text-center text-stone-300">No contact information available.</div>
+            ) : (
+              contactInfo.map((info, index) => {
+                const action = getContactAction(info.field_name, info.field_value);
+                return (
+                  <Card 
+                    key={info.id}
+                    className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 hover:-translate-y-1"
+                    style={{
+                      animationDelay: `${index * 0.1}s`
+                    }}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          {getContactIcon(info.field_name)}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white mb-1">{getFieldLabel(info.field_name)}</h4>
+                          {action ? (
+                            <a 
+                              href={action}
+                              className="text-stone-300 hover:text-amber-400 transition-colors duration-300"
+                            >
+                              {info.field_value}
+                            </a>
+                          ) : (
+                            <p className="text-stone-300">{info.field_value}</p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         </div>
 

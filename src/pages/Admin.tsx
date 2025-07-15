@@ -20,6 +20,7 @@ type AboutContent = Database['public']['Tables']['about_content']['Row'];
 type Service = Database['public']['Tables']['services']['Row'];
 type PortfolioItem = Database['public']['Tables']['portfolio_items']['Row'];
 type ContactSubmission = Database['public']['Tables']['contact_submissions']['Row'];
+type CompanyContactInfo = Database['public']['Tables']['company_contact_info']['Row'];
 
 export default function Admin() {
   const [loading, setLoading] = useState(true);
@@ -35,6 +36,7 @@ export default function Admin() {
   const [services, setServices] = useState<Service[]>([]);
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
+  const [companyContactInfo, setCompanyContactInfo] = useState<CompanyContactInfo[]>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -81,12 +83,13 @@ export default function Admin() {
 
   const loadAllContent = async () => {
     try {
-      const [heroData, aboutData, servicesData, portfolioData, contactData] = await Promise.all([
+      const [heroData, aboutData, servicesData, portfolioData, contactData, companyContactData] = await Promise.all([
         supabase.from('hero_content').select('*').order('created_at', { ascending: false }),
         supabase.from('about_content').select('*').order('created_at', { ascending: false }),
         supabase.from('services').select('*').order('sort_order'),
         supabase.from('portfolio_items').select('*').order('sort_order'),
-        supabase.from('contact_submissions').select('*').order('created_at', { ascending: false })
+        supabase.from('contact_submissions').select('*').order('created_at', { ascending: false }),
+        supabase.from('company_contact_info').select('*').order('field_name')
       ]);
 
       setHeroContent(heroData.data || []);
@@ -94,6 +97,7 @@ export default function Admin() {
       setServices(servicesData.data || []);
       setPortfolioItems(portfolioData.data || []);
       setContactSubmissions(contactData.data || []);
+      setCompanyContactInfo(companyContactData.data || []);
     } catch (error) {
       console.error('Error loading content:', error);
       toast({
@@ -133,6 +137,8 @@ export default function Admin() {
         return <PortfolioManager items={portfolioItems} onUpdate={loadAllContent} />;
       case 'contact':
         return <ContactManager submissions={contactSubmissions} onUpdate={loadAllContent} />;
+      case 'company-contact':
+        return <CompanyContactManager contactInfo={companyContactInfo} onUpdate={loadAllContent} />;
       case 'users-list':
         return <UsersList />;
       case 'user-roles':
@@ -938,5 +944,164 @@ function ContactManager({ submissions, onUpdate }: { submissions: ContactSubmiss
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// Company Contact Manager Component
+function CompanyContactManager({ contactInfo, onUpdate }: { contactInfo: CompanyContactInfo[], onUpdate: () => void }) {
+  const [editingItem, setEditingItem] = useState<CompanyContactInfo | null>(null);
+  const [formData, setFormData] = useState({
+    field_name: '',
+    field_value: '',
+    is_active: true
+  });
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (editingItem) {
+        await supabase
+          .from('company_contact_info')
+          .update({
+            field_value: formData.field_value,
+            is_active: formData.is_active
+          })
+          .eq('id', editingItem.id);
+        toast({ title: "Success", description: "Contact information updated successfully." });
+      } else {
+        await supabase
+          .from('company_contact_info')
+          .insert([formData]);
+        toast({ title: "Success", description: "Contact information created successfully." });
+      }
+      
+      setEditingItem(null);
+      setFormData({ field_name: '', field_value: '', is_active: true });
+      onUpdate();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save contact information.", variant: "destructive" });
+    }
+  };
+
+  const handleEdit = (item: CompanyContactInfo) => {
+    setEditingItem(item);
+    setFormData({
+      field_name: item.field_name,
+      field_value: item.field_value,
+      is_active: item.is_active || true
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await supabase.from('company_contact_info').delete().eq('id', id);
+      toast({ title: "Success", description: "Contact information deleted successfully." });
+      onUpdate();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete contact information.", variant: "destructive" });
+    }
+  };
+
+  const getFieldLabel = (fieldName: string) => {
+    const labels: { [key: string]: string } = {
+      'phone': 'Phone Number',
+      'email': 'Email Address',
+      'address': 'Physical Address',
+      'hours': 'Business Hours'
+    };
+    return labels[fieldName] || fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{editingItem ? 'Edit' : 'Create'} Company Contact Information</CardTitle>
+          <CardDescription>
+            Manage your company's contact information displayed on the website
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="field_name">Field Name</Label>
+              <Input
+                id="field_name"
+                value={formData.field_name}
+                onChange={(e) => setFormData({ ...formData, field_name: e.target.value })}
+                placeholder="e.g., phone, email, address, hours"
+                required
+                disabled={!!editingItem}
+              />
+            </div>
+            <div>
+              <Label htmlFor="field_value">Field Value</Label>
+              <Textarea
+                id="field_value"
+                value={formData.field_value}
+                onChange={(e) => setFormData({ ...formData, field_value: e.target.value })}
+                placeholder="Enter the contact information"
+                required
+                rows={3}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_active"
+                checked={formData.is_active}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              />
+              <Label htmlFor="is_active">Active</Label>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit">
+                {editingItem ? 'Update' : 'Create'}
+              </Button>
+              {editingItem && (
+                <Button type="button" variant="outline" onClick={() => {
+                  setEditingItem(null);
+                  setFormData({ field_name: '', field_value: '', is_active: true });
+                }}>
+                  Cancel
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Current Contact Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {contactInfo.map((item) => (
+              <div key={item.id} className="flex items-start justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <h3 className="font-semibold">{getFieldLabel(item.field_name)}</h3>
+                  <p className="text-muted-foreground mt-1">{item.field_value}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant={item.is_active ? "default" : "secondary"}>
+                      {item.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
+                    Edit
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleDelete(item.id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
