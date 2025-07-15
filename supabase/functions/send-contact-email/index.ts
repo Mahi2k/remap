@@ -7,6 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "X-XSS-Protection": "1; mode=block",
 };
 
 interface ContactEmailRequest {
@@ -24,7 +28,43 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { firstName, lastName, email, projectType, message }: ContactEmailRequest = await req.json();
+    const body: ContactEmailRequest = await req.json();
+    
+    // Input validation and sanitization
+    if (!body.firstName || !body.lastName || !body.email || !body.projectType || !body.message) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Sanitize inputs to prevent XSS
+    const sanitizeHtml = (str: string): string => {
+      return str.replace(/[<>]/g, '').trim();
+    };
+
+    const firstName = sanitizeHtml(body.firstName);
+    const lastName = sanitizeHtml(body.lastName);
+    const email = body.email.trim().toLowerCase();
+    const projectType = sanitizeHtml(body.projectType);
+    const message = sanitizeHtml(body.message);
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(JSON.stringify({ error: 'Invalid email format' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Length validation
+    if (firstName.length < 2 || lastName.length < 2 || message.length < 10) {
+      return new Response(JSON.stringify({ error: 'Input validation failed' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
     // Send confirmation email to the user
     const userEmailResponse = await resend.emails.send({

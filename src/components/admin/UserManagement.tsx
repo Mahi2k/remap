@@ -107,39 +107,35 @@ export function UsersList() {
 
   const updateUserRole = async (userId: string, role: 'admin' | 'user', action: 'add' | 'remove') => {
     try {
-      if (action === 'add') {
-        const { error } = await supabase
-          .from('user_roles')
-          .insert([{ user_id: userId, role }]);
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Success",
-          description: `${role} role added successfully.`,
-        });
-      } else {
-        const { error } = await supabase
-          .from('user_roles')
-          .delete()
-          .eq('user_id', userId)
-          .eq('role', role);
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Success",
-          description: `${role} role removed successfully.`,
-        });
+      // Use secure edge function for role management
+      const { data, error } = await supabase.functions.invoke('manage-user-role', {
+        body: {
+          userId,
+          role,
+          action
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to update user role');
       }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+        
+      toast({
+        title: "Success",
+        description: `${role} role ${action}ed successfully.`,
+      });
       
       loadUsers();
       setRoleDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user role:', error);
       toast({
         title: "Error",
-        description: "Failed to update user role.",
+        description: error.message || "Failed to update user role.",
         variant: "destructive",
       });
     }
