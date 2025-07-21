@@ -112,22 +112,22 @@ const Contact = () => {
                       animationDelay: `${index * 0.1}s`
                     }}
                   >
-                    <CardContent className="p-6">
+                    <CardContent className="p-8">
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center flex-shrink-0">
                           {getContactIcon(info.field_name)}
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-white mb-1">{getFieldLabel(info.field_name)}</h4>
                           {action ? (
                             <a 
                               href={action}
-                              className="text-stone-300 hover:text-amber-400 transition-colors duration-300"
+                              className="text-stone-300 hover:text-amber-400 transition-colors duration-300 break-words"
                             >
                               {info.field_value}
                             </a>
                           ) : (
-                            <p className="text-stone-300">{info.field_value}</p>
+                            <p className="text-stone-300 break-words">{info.field_value}</p>
                           )}
                         </div>
                       </div>
