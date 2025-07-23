@@ -13,6 +13,7 @@ import { Loader2, LogOut, Eye, EyeOff, Trash2, Plus } from "lucide-react";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { UsersList, UserRolesManager } from "@/components/admin/UserManagement";
 import { Settings } from "@/components/admin/Settings";
+import CustomerReviewsManagement from "@/components/admin/CustomerReviewsManagement";
 import type { Database } from "@/integrations/supabase/types";
 
 type HeroContent = Database['public']['Tables']['hero_content']['Row'];
@@ -135,6 +136,8 @@ export default function Admin() {
         return <ServicesManager services={services} onUpdate={loadAllContent} />;
       case 'portfolio':
         return <PortfolioManager items={portfolioItems} onUpdate={loadAllContent} />;
+      case 'customer-reviews':
+        return <CustomerReviewsManagement />;
       case 'contact':
         return <ContactManager submissions={contactSubmissions} onUpdate={loadAllContent} />;
       case 'company-contact':

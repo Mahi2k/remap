@@ -1,14 +1,64 @@
-
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, Award, Users, Clock } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Star, Award, Users, Clock, Quote } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import customer1 from '@/assets/customer-1.jpg';
+import customer2 from '@/assets/customer-2.jpg';
+import customer3 from '@/assets/customer-3.jpg';
+import customer4 from '@/assets/customer-4.jpg';
+
+interface CustomerReview {
+  id: string;
+  name: string;
+  review: string;
+  rating: number;
+  image_url?: string;
+  project_type?: string;
+}
 
 const About = () => {
+  const [customerReviews, setCustomerReviews] = useState<CustomerReview[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const stats = [
     { icon: <Users className="h-8 w-8" />, number: "500+", label: "Happy Clients" },
     { icon: <Award className="h-8 w-8" />, number: "15+", label: "Awards Won" },
     { icon: <Clock className="h-8 w-8" />, number: "10+", label: "Years Experience" },
     { icon: <Star className="h-8 w-8" />, number: "4.9", label: "Client Rating" }
   ];
+
+  // Fallback images mapping
+  const fallbackImages = [customer1, customer2, customer3, customer4];
+
+  useEffect(() => {
+    const fetchCustomerReviews = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('customer_reviews')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
+
+        if (error) {
+          console.error('Error fetching customer reviews:', error);
+          return;
+        }
+
+        setCustomerReviews(data || []);
+      } catch (error) {
+        console.error('Error fetching customer reviews:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomerReviews();
+  }, []);
+
+  const getCustomerImage = (review: CustomerReview, index: number) => {
+    return review.image_url || fallbackImages[index % fallbackImages.length];
+  };
 
   return (
     <section id="about" className="py-20 bg-white">
@@ -82,6 +132,79 @@ const About = () => {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Customer Reviews Section */}
+        <div className="mt-24">
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
+              What Our <span className="text-amber-600">Customers</span> Say
+            </h3>
+            <p className="text-lg text-stone-600 max-w-2xl mx-auto">
+              Don't just take our word for it. Hear from our satisfied clients who have 
+              experienced the Remap difference in their spaces.
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+            </div>
+          ) : (
+            <Carousel 
+              className="w-full max-w-5xl mx-auto" 
+              opts={{ 
+                align: "start", 
+                loop: true,
+                dragFree: true,
+                duration: 30
+              }}
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {customerReviews.map((review, index) => (
+                  <CarouselItem key={review.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                    <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 border-none bg-gradient-to-br from-white to-stone-50 transform hover:-translate-y-1">
+                      <CardContent className="p-6 flex flex-col h-full">
+                        {/* Quote Icon */}
+                        <div className="flex items-center justify-center w-12 h-12 bg-amber-100 rounded-full mb-4 mx-auto">
+                          <Quote className="h-6 w-6 text-amber-600" />
+                        </div>
+
+                        {/* Rating Stars */}
+                        <div className="flex justify-center mb-4">
+                          {[...Array(review.rating)].map((_, starIndex) => (
+                            <Star key={starIndex} className="h-5 w-5 text-amber-500 fill-current" />
+                          ))}
+                        </div>
+
+                        {/* Review Text */}
+                        <p className="text-stone-600 text-center mb-6 leading-relaxed flex-grow">
+                          "{review.review}"
+                        </p>
+
+                        {/* Customer Info */}
+                        <div className="text-center mt-auto">
+                          <div className="w-16 h-16 rounded-full overflow-hidden mx-auto mb-3 border-2 border-amber-200">
+                            <img 
+                              src={getCustomerImage(review, index)} 
+                              alt={review.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <h4 className="font-semibold text-stone-800 mb-1">{review.name}</h4>
+                          {review.project_type && (
+                            <p className="text-amber-600 text-sm font-medium">{review.project_type}</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-12 hover:bg-amber-50 hover:border-amber-200" />
+              <CarouselNext className="hidden md:flex -right-12 hover:bg-amber-50 hover:border-amber-200" />
+            </Carousel>
+          )}
         </div>
       </div>
     </section>
