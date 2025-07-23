@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, MapPin } from 'lucide-react';
+import { Menu, X, MapPin, Star } from 'lucide-react';
 import { GetQuoteDialog } from './GetQuoteDialog';
+import CustomerReviewDialog from './CustomerReviewDialog';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -51,6 +52,12 @@ const Navigation = () => {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
+            <CustomerReviewDialog>
+              <Button variant="outline" className="border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white px-4 py-2 rounded-full transition-all duration-300 hover:scale-105">
+                <Star className="h-4 w-4 mr-2" />
+                Leave Review
+              </Button>
+            </CustomerReviewDialog>
             <GetQuoteDialog>
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full transition-all duration-300 hover:scale-105">
                 Get Quote
@@ -84,6 +91,12 @@ const Navigation = () => {
                 {item.name}
               </a>
             ))}
+            <CustomerReviewDialog>
+              <Button variant="outline" className="w-full mt-4 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white rounded-full">
+                <Star className="h-4 w-4 mr-2" />
+                Leave Review
+              </Button>
+            </CustomerReviewDialog>
             <GetQuoteDialog>
               <Button className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
                 Get Quote
