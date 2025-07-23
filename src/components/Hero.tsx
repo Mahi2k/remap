@@ -1,12 +1,31 @@
 
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { useEffect, useState } from 'react';
 
 interface HeroProps {
   scrollY: number;
 }
 
 const Hero = ({ scrollY }: HeroProps) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const carouselImages = [
+    'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80', // Modern living room
+    'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80', // Bedroom interior
+    'https://images.unsplash.com/photo-1484101403633-562f891dc89a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80', // Kitchen design
+    'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80', // Modern apartment
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'  // Dining room
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+    }, 4000); // Change slide every 4 seconds
+    return () => clearInterval(interval);
+  }, [carouselImages.length]);
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -15,17 +34,25 @@ const Hero = ({ scrollY }: HeroProps) => {
   };
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background with Parallax Effect */}
-      <div 
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          transform: `translateY(${scrollY * 0.5}px)`,
-        }}
-      />
+      {/* Background Carousel */}
+      <div className="absolute inset-0 z-0">
+        <div className="relative w-full h-full">
+          {carouselImages.map((image, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{
+                backgroundImage: `url("${image}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                transform: `translateY(${scrollY * 0.3}px)`,
+              }}
+            />
+          ))}
+        </div>
+      </div>
       
       {/* Overlay */}
       <div className="absolute inset-0 bg-stone-900/40 z-10" />
