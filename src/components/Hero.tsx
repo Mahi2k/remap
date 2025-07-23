@@ -12,11 +12,11 @@ const Hero = ({ scrollY }: HeroProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   
   const carouselImages = [
-    'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80', // Modern living room
-    'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80', // Bedroom interior
-    'https://images.unsplash.com/photo-1484101403633-562f891dc89a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80', // Kitchen design
-    'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80', // Modern apartment
-    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'  // Dining room
+    '/image-collection/interiors/living-room.jpg', // Modern living room
+    '/image-collection/interiors/bedroom.jpg', // Bedroom interior
+    '/image-collection/interiors/kitchen.jpg', // Kitchen design
+    '/image-collection/interiors/apartment.jpg', // Modern apartment
+    '/image-collection/interiors/dining-room.jpg'  // Dining room
   ];
 
   useEffect(() => {
