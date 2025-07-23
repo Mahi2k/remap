@@ -33,7 +33,7 @@ const Hero = ({ scrollY }: HeroProps) => {
     }
   };
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden" role="banner" aria-label="Hero section">
       {/* Background Carousel */}
       <div className="absolute inset-0 z-0">
         <div className="relative w-full h-full">
@@ -65,7 +65,7 @@ const Hero = ({ scrollY }: HeroProps) => {
         </h1>
         
         <p className="text-xl md:text-2xl mb-8 text-stone-200 animate-fade-in opacity-0 [animation-delay:1s] [animation-fill-mode:forwards]">
-          Creating beautiful, functional interiors that reflect your unique style and personality
+          Professional interior design services creating beautiful, functional spaces. Specializing in residential and commercial design with over 10 years of experience.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in opacity-0 [animation-delay:1.5s] [animation-fill-mode:forwards]">

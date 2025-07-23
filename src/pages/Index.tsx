@@ -22,11 +22,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-stone-100">
       <Navigation />
-      <Hero scrollY={scrollY} />
-      <Services />
-      <Portfolio />
-      <About />
-      <Contact />
+      <main>
+        <Hero scrollY={scrollY} />
+        <Services />
+        <Portfolio />
+        <About />
+        <Contact />
+      </main>
     </div>
   );
 };
