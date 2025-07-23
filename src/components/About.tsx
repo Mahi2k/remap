@@ -3,10 +3,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Star, Award, Users, Clock, Quote } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import customer1 from '@/assets/customer-1.jpg';
-import customer2 from '@/assets/customer-2.jpg';
-import customer3 from '@/assets/customer-3.jpg';
-import customer4 from '@/assets/customer-4.jpg';
 
 interface CustomerReview {
   id: string;
@@ -28,8 +24,13 @@ const About = () => {
     { icon: <Star className="h-8 w-8" />, number: "4.9", label: "Client Rating" }
   ];
 
-  // Fallback images mapping
-  const fallbackImages = [customer1, customer2, customer3, customer4];
+  // Fallback placeholder images
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=400&fit=crop&crop=face&auto=format",
+    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face&auto=format", 
+    "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face&auto=format",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face&auto=format"
+  ];
 
   useEffect(() => {
     const fetchCustomerReviews = async () => {
