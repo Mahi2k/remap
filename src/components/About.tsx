@@ -56,9 +56,12 @@ const About = () => {
           {/* Right Image */}
           <div className="relative">
             <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1500673922987-e212871fec22?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Interior Design Studio"
+              <video
+                src="/videos/about-video.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
                 className="w-full h-96 object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/30 to-transparent" />
