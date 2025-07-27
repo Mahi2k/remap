@@ -13,16 +13,29 @@ interface CustomerReview {
   project_type?: string;
 }
 
+interface Stat {
+  id: string;
+  icon_name: string;
+  number_value: string;
+  label: string;
+  sort_order: number;
+}
+
 const About = () => {
   const [customerReviews, setCustomerReviews] = useState<CustomerReview[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const stats = [
-    { icon: <Users className="h-8 w-8" />, number: "500+", label: "Happy Clients" },
-    { icon: <Award className="h-8 w-8" />, number: "15+", label: "Awards Won" },
-    { icon: <Clock className="h-8 w-8" />, number: "10+", label: "Years Experience" },
-    { icon: <Star className="h-8 w-8" />, number: "4.9", label: "Client Rating" }
-  ];
+  const getIconComponent = (iconName: string) => {
+    const icons: { [key: string]: any } = {
+      Users,
+      Award,
+      Clock,
+      Star
+    };
+    const IconComponent = icons[iconName] || Users;
+    return <IconComponent className="h-8 w-8" />;
+  };
 
   // Fallback placeholder images
   const fallbackImages = [
@@ -33,28 +46,40 @@ const About = () => {
   ];
 
   useEffect(() => {
-    const fetchCustomerReviews = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase
-          .from('customer_reviews')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order');
+        const [reviewsResponse, statsResponse] = await Promise.all([
+          supabase
+            .from('customer_reviews')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order'),
+          supabase
+            .from('stats')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order')
+        ]);
 
-        if (error) {
-          console.error('Error fetching customer reviews:', error);
-          return;
+        if (reviewsResponse.error) {
+          console.error('Error fetching customer reviews:', reviewsResponse.error);
+        } else {
+          setCustomerReviews(reviewsResponse.data || []);
         }
 
-        setCustomerReviews(data || []);
+        if (statsResponse.error) {
+          console.error('Error fetching stats:', statsResponse.error);
+        } else {
+          setStats(statsResponse.data || []);
+        }
       } catch (error) {
-        console.error('Error fetching customer reviews:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCustomerReviews();
+    fetchData();
   }, []);
 
   const getCustomerImage = (review: CustomerReview, index: number) => {
@@ -88,16 +113,16 @@ const About = () => {
             <div className="grid grid-cols-2 gap-6">
               {stats.map((stat, index) => (
                 <div 
-                  key={stat.label}
+                  key={stat.id}
                   className="text-center p-4 rounded-lg bg-gradient-to-br from-amber-50 to-stone-50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                   style={{
                     animationDelay: `${index * 0.1}s`
                   }}
                 >
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-600 text-white rounded-full mb-3">
-                    {stat.icon}
+                    {getIconComponent(stat.icon_name)}
                   </div>
-                  <div className="text-2xl font-bold text-stone-800 mb-1">{stat.number}</div>
+                  <div className="text-2xl font-bold text-stone-800 mb-1">{stat.number_value}</div>
                   <div className="text-stone-600 text-sm">{stat.label}</div>
                 </div>
               ))}

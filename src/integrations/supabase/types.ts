@@ -287,6 +287,39 @@ export type Database = {
         }
         Relationships: []
       }
+      stats: {
+        Row: {
+          created_at: string
+          icon_name: string
+          id: string
+          is_active: boolean | null
+          label: string
+          number_value: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon_name: string
+          id?: string
+          is_active?: boolean | null
+          label: string
+          number_value: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon_name?: string
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          number_value?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

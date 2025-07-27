@@ -14,6 +14,7 @@ import { AdminSidebar } from "@/components/AdminSidebar";
 import { UsersList, UserRolesManager } from "@/components/admin/UserManagement";
 import { Settings } from "@/components/admin/Settings";
 import CustomerReviewsManagement from "@/components/admin/CustomerReviewsManagement";
+import StatsManager from "@/components/admin/StatsManager";
 import type { Database } from "@/integrations/supabase/types";
 
 type HeroContent = Database['public']['Tables']['hero_content']['Row'];
@@ -132,6 +133,8 @@ export default function Admin() {
         return <HeroContentManager content={heroContent} onUpdate={loadAllContent} />;
       case 'about':
         return <AboutContentManager content={aboutContent} onUpdate={loadAllContent} />;
+      case 'stats':
+        return <StatsManager />;
       case 'services':
         return <ServicesManager services={services} onUpdate={loadAllContent} />;
       case 'portfolio':

@@ -12,7 +12,8 @@ import {
   ChevronDown,
   ChevronRight,
   Phone,
-  Star
+  Star,
+  BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const menuItems = [
     items: [
       { id: "hero", label: "Hero Section", icon: Home },
       { id: "about", label: "About Section", icon: FileText },
+      { id: "stats", label: "Statistics", icon: BarChart3 },
       { id: "services", label: "Services", icon: Briefcase },
       { id: "portfolio", label: "Portfolio", icon: Image },
       { id: "customer-reviews", label: "Customer Reviews", icon: Star },
