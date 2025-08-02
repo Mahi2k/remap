@@ -13,7 +13,11 @@ export const PORTFOLIO_SUBCATEGORIES = {
   RESIDENTIAL: 'residential',
   COMMERCIAL: 'commercial', 
   RENOVATION: 'renovation',
-  BEDROOMS: 'bedrooms'
+  BEDROOMS: 'bedrooms',
+  LIVING_SPACES: 'living-spaces',
+  KITCHENS: 'kitchens',
+  BATHROOMS: 'bathrooms',
+  OFFICES: 'offices'
 } as const;
 
 /**

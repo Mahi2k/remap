@@ -25,6 +25,18 @@ const PORTFOLIO_IMAGES = {
     'ANU ROOM 10.png',
     'ANU ROOM 11.jpg'
   ],
+  [PORTFOLIO_SUBCATEGORIES.LIVING_SPACES]: [
+    // Add living space images here when available
+  ],
+  [PORTFOLIO_SUBCATEGORIES.KITCHENS]: [
+    // Add kitchen images here when available
+  ],
+  [PORTFOLIO_SUBCATEGORIES.BATHROOMS]: [
+    // Add bathroom images here when available
+  ],
+  [PORTFOLIO_SUBCATEGORIES.OFFICES]: [
+    // Add office images here when available
+  ],
   [PORTFOLIO_SUBCATEGORIES.RESIDENTIAL]: [
     // Add residential images here when available
   ],
@@ -55,6 +67,21 @@ export function getPortfolioImagesFromFolders(): PortfolioImage[] {
       // Map subcategory to main category
       let category = 'bedroom';
       switch (subcategory) {
+        case PORTFOLIO_SUBCATEGORIES.LIVING_SPACES:
+          category = 'living';
+          break;
+        case PORTFOLIO_SUBCATEGORIES.KITCHENS:
+          category = 'kitchen';
+          break;
+        case PORTFOLIO_SUBCATEGORIES.BATHROOMS:
+          category = 'bathroom';
+          break;
+        case PORTFOLIO_SUBCATEGORIES.OFFICES:
+          category = 'office';
+          break;
+        case PORTFOLIO_SUBCATEGORIES.BEDROOMS:
+          category = 'bedroom';
+          break;
         case PORTFOLIO_SUBCATEGORIES.RESIDENTIAL:
           category = 'living';
           break;
@@ -63,9 +90,6 @@ export function getPortfolioImagesFromFolders(): PortfolioImage[] {
           break;
         case PORTFOLIO_SUBCATEGORIES.RENOVATION:
           category = 'renovation';
-          break;
-        case PORTFOLIO_SUBCATEGORIES.BEDROOMS:
-          category = 'bedroom';
           break;
       }
 
