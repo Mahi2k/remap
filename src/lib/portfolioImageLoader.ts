@@ -26,7 +26,13 @@ const PORTFOLIO_IMAGES = {
     'ANU ROOM 11.jpg'
   ],
   [PORTFOLIO_SUBCATEGORIES.LIVING_SPACES]: [
-    // Add living space images here when available
+    'Mordern Living Room-01 (1).jpg',
+    'Mordern Living Room-01 (2).jpg',
+    'Mordern Living Room-01 (3).jpg',
+    'Mordern Living Room-01 (4).jpg',
+    'Mordern Living Room-01 (5).jpg',
+    'Mordern Living Room-01 (6).jpg',
+    'Mordern Living Room-01 (7).jpg'
   ],
   [PORTFOLIO_SUBCATEGORIES.KITCHENS]: [
     // Add kitchen images here when available
