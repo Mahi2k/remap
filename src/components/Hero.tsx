@@ -3,6 +3,7 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { useEffect, useState } from 'react';
+import { getHeroImages, getInteriorImages } from '@/lib/imageUtils';
 
 interface HeroProps {
   scrollY: number;
@@ -11,13 +12,32 @@ interface HeroProps {
 const Hero = ({ scrollY }: HeroProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  const carouselImages = [
-    '/image-collection/interiors/living-room.jpg', // Modern living room
-    '/image-collection/interiors/bedroom.jpg', // Bedroom interior
-    '/image-collection/interiors/kitchen.jpg', // Kitchen design
-    '/image-collection/interiors/apartment.jpg', // Modern apartment
-    '/image-collection/interiors/dining-room.jpg'  // Dining room
-  ];
+  // Try to load hero images first, fallback to interior images
+  const [carouselImages, setCarouselImages] = useState<string[]>(getInteriorImages());
+  
+  useEffect(() => {
+    // First try hero images, if they fail to load, use interior images
+    const heroImages = getHeroImages();
+    const checkImageExists = (url: string): Promise<boolean> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    };
+
+    // Check if hero images exist
+    Promise.all(heroImages.map(checkImageExists)).then((results) => {
+      const hasHeroImages = results.some(exists => exists);
+      if (hasHeroImages) {
+        setCarouselImages(heroImages);
+      } else {
+        // Use existing interior images as fallback
+        setCarouselImages(getInteriorImages());
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

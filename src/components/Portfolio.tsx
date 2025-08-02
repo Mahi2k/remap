@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { getImagePath, getFallbackImage, IMAGE_CATEGORIES, PORTFOLIO_SUBCATEGORIES } from '@/lib/imageUtils';
 
 type PortfolioItem = Tables<'portfolio_items'>;
 
@@ -11,6 +12,43 @@ const Portfolio = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [projects, setProjects] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Helper function to get portfolio image path
+  const getPortfolioImagePath = (project: PortfolioItem): string => {
+    if (project.image_url) {
+      // If it's already a full URL or starts with /, use as-is
+      if (project.image_url.startsWith('http') || project.image_url.startsWith('/image-collection')) {
+        return project.image_url;
+      }
+      
+      // Determine subcategory based on project category
+      let subcategory = '';
+      if (project.category) {
+        switch (project.category.toLowerCase()) {
+          case 'living':
+          case 'bedroom': 
+          case 'kitchen':
+          case 'bathroom':
+            subcategory = PORTFOLIO_SUBCATEGORIES.RESIDENTIAL;
+            break;
+          case 'office':
+          case 'commercial':
+            subcategory = PORTFOLIO_SUBCATEGORIES.COMMERCIAL;
+            break;
+          case 'renovation':
+          case 'before-after':
+            subcategory = PORTFOLIO_SUBCATEGORIES.RENOVATION;
+            break;
+          default:
+            subcategory = PORTFOLIO_SUBCATEGORIES.RESIDENTIAL;
+        }
+      }
+      
+      return getImagePath(IMAGE_CATEGORIES.PORTFOLIO, project.image_url, subcategory);
+    }
+    
+    return getFallbackImage(IMAGE_CATEGORIES.PORTFOLIO);
+  };
 
   useEffect(() => {
     const fetchPortfolioItems = async () => {
@@ -99,7 +137,7 @@ const Portfolio = () => {
               >
                 <div className="relative overflow-hidden">
                   <img
-                    src={project.image_url || '/placeholder.svg'}
+                    src={getPortfolioImagePath(project)}
                     alt={project.title}
                     className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
                   />
