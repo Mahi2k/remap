@@ -55,34 +55,14 @@ const Portfolio = () => {
   };
 
   useEffect(() => {
-    const fetchPortfolioItems = async () => {
-      try {
-        // Fetch from database
-        const { data, error } = await supabase
-          .from('portfolio_items')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true });
-
-        if (error) {
-          console.error('Error fetching portfolio items:', error);
-        }
-
-        setProjects(data || []);
-      } catch (error) {
-        console.error('Error fetching portfolio items:', error);
-      }
-    };
-
     const loadFolderImages = () => {
-      // Load images from GitHub folders
+      // Load images from GitHub folders only
       const images = getPortfolioImagesFromFolders();
       setFolderImages(images);
     };
 
     const loadPortfolio = async () => {
       setLoading(true);
-      await fetchPortfolioItems();
       loadFolderImages();
       setLoading(false);
     };
@@ -99,13 +79,8 @@ const Portfolio = () => {
     { key: 'office', label: 'Offices' }
   ];
 
-  // Combine database projects and folder images
-  const allProjects = [...projects];
+  // Only use folder images from GitHub
   const filteredFolderImages = filterPortfolioImages(folderImages, activeFilter);
-  
-  const filteredProjects = activeFilter === 'all' 
-    ? projects 
-    : projects.filter(project => project.category === activeFilter);
 
   return (
     <section id="portfolio" className="py-20 bg-gradient-to-br from-stone-50 to-amber-50/30">
@@ -146,37 +121,13 @@ const Portfolio = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Database Projects */}
-            {filteredProjects.map((project, index) => (
-              <Card 
-                key={`db-${project.id}`}
-                className="group overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-none animate-fade-in"
-                style={{
-                  animationDelay: `${index * 0.1}s`
-                }}
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={getPortfolioImagePath(project)}
-                    alt={project.title}
-                    className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                    <p className="text-stone-200">{project.description}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-            
-            {/* Folder Images */}
+            {/* Only Folder Images from GitHub */}
             {filteredFolderImages.map((image, index) => (
               <Card 
                 key={`folder-${image.id}`}
                 className="group overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-none animate-fade-in"
                 style={{
-                  animationDelay: `${(filteredProjects.length + index) * 0.1}s`
+                  animationDelay: `${index * 0.1}s`
                 }}
               >
                 <div className="relative overflow-hidden">
