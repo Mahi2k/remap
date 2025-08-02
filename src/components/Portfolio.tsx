@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { getImagePath, getFallbackImage, IMAGE_CATEGORIES, PORTFOLIO_SUBCATEGORIES } from '@/lib/imageUtils';
+import { getPortfolioImagesFromFolders, filterPortfolioImages, type PortfolioImage } from '@/lib/portfolioImageLoader';
 
 type PortfolioItem = Tables<'portfolio_items'>;
 
 const Portfolio = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [projects, setProjects] = useState<PortfolioItem[]>([]);
+  const [folderImages, setFolderImages] = useState<PortfolioImage[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Helper function to get portfolio image path
@@ -55,6 +57,7 @@ const Portfolio = () => {
   useEffect(() => {
     const fetchPortfolioItems = async () => {
       try {
+        // Fetch from database
         const { data, error } = await supabase
           .from('portfolio_items')
           .select('*')
@@ -63,18 +66,28 @@ const Portfolio = () => {
 
         if (error) {
           console.error('Error fetching portfolio items:', error);
-          return;
         }
 
         setProjects(data || []);
       } catch (error) {
         console.error('Error fetching portfolio items:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchPortfolioItems();
+    const loadFolderImages = () => {
+      // Load images from GitHub folders
+      const images = getPortfolioImagesFromFolders();
+      setFolderImages(images);
+    };
+
+    const loadPortfolio = async () => {
+      setLoading(true);
+      await fetchPortfolioItems();
+      loadFolderImages();
+      setLoading(false);
+    };
+
+    loadPortfolio();
   }, []);
 
   const filters = [
@@ -86,6 +99,10 @@ const Portfolio = () => {
     { key: 'office', label: 'Offices' }
   ];
 
+  // Combine database projects and folder images
+  const allProjects = [...projects];
+  const filteredFolderImages = filterPortfolioImages(folderImages, activeFilter);
+  
   const filteredProjects = activeFilter === 'all' 
     ? projects 
     : projects.filter(project => project.category === activeFilter);
@@ -129,9 +146,10 @@ const Portfolio = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Database Projects */}
             {filteredProjects.map((project, index) => (
               <Card 
-                key={project.id}
+                key={`db-${project.id}`}
                 className="group overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-none animate-fade-in"
                 style={{
                   animationDelay: `${index * 0.1}s`
@@ -147,6 +165,30 @@ const Portfolio = () => {
                   <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <h3 className="text-xl font-bold mb-2">{project.title}</h3>
                     <p className="text-stone-200">{project.description}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+            
+            {/* Folder Images */}
+            {filteredFolderImages.map((image, index) => (
+              <Card 
+                key={`folder-${image.id}`}
+                className="group overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-none animate-fade-in"
+                style={{
+                  animationDelay: `${(filteredProjects.length + index) * 0.1}s`
+                }}
+              >
+                <div className="relative overflow-hidden">
+                  <img
+                    src={image.imagePath}
+                    alt={image.title}
+                    className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <h3 className="text-xl font-bold mb-2">{image.title}</h3>
+                    <p className="text-stone-200">{image.description}</p>
                   </div>
                 </div>
               </Card>
