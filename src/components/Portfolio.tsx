@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { getImagePath, getFallbackImage, IMAGE_CATEGORIES, PORTFOLIO_SUBCATEGORIES } from '@/lib/imageUtils';
 import { getPortfolioImagesFromFolders, filterPortfolioImages, type PortfolioImage } from '@/lib/portfolioImageLoader';
+import { ImageMagnifier } from '@/components/ImageMagnifier';
+import { ZoomIn } from 'lucide-react';
 
 type PortfolioItem = Tables<'portfolio_items'>;
 
@@ -14,6 +16,12 @@ const Portfolio = () => {
   const [projects, setProjects] = useState<PortfolioItem[]>([]);
   const [folderImages, setFolderImages] = useState<PortfolioImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [magnifierOpen, setMagnifierOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{
+    src: string;
+    alt: string;
+    title: string;
+  } | null>(null);
 
   // Helper function to get portfolio image path
   const getPortfolioImagePath = (project: PortfolioItem): string => {
@@ -82,6 +90,20 @@ const Portfolio = () => {
   // Only use folder images from GitHub
   const filteredFolderImages = filterPortfolioImages(folderImages, activeFilter);
 
+  const handleImageClick = (imageSrc: string, imageAlt: string, imageTitle: string) => {
+    setSelectedImage({
+      src: imageSrc,
+      alt: imageAlt,
+      title: imageTitle,
+    });
+    setMagnifierOpen(true);
+  };
+
+  const handleCloseMagnifier = () => {
+    setMagnifierOpen(false);
+    setSelectedImage(null);
+  };
+
   return (
     <section id="portfolio" className="py-20 bg-gradient-to-br from-stone-50 to-amber-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -130,13 +152,22 @@ const Portfolio = () => {
                   animationDelay: `${index * 0.1}s`
                 }}
               >
-                <div className="relative overflow-hidden">
+                <div className="relative overflow-hidden group">
                   <img
                     src={image.imagePath}
                     alt={image.title}
-                    className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
+                    onClick={() => handleImageClick(image.imagePath, image.title, image.title)}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  {/* Zoom icon overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                      <ZoomIn className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+                  
                   <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <h3 className="text-xl font-bold mb-2">{image.title}</h3>
                     <p className="text-stone-200">{image.description}</p>
@@ -155,6 +186,17 @@ const Portfolio = () => {
             View All Projects
           </Button>
         </div>
+
+        {/* Image Magnifier */}
+        {selectedImage && (
+          <ImageMagnifier
+            isOpen={magnifierOpen}
+            onClose={handleCloseMagnifier}
+            imageSrc={selectedImage.src}
+            imageAlt={selectedImage.alt}
+            imageTitle={selectedImage.title}
+          />
+        )}
       </div>
     </section>
   );
