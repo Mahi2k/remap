@@ -85,6 +85,33 @@ export function ImageManager() {
     }
   };
 
+  const syncFromAccessPoint = async () => {
+    try {
+      setSyncing(true);
+      const { data, error } = await supabase.functions.invoke('s3-image-manager', {
+        body: { action: 'sync-access-point' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Access Point Sync Complete",
+        description: `Synced ${data.synced} images from S3 Access Point`,
+      });
+      
+      await fetchData();
+    } catch (error) {
+      console.error('Error syncing from S3 Access Point:', error);
+      toast({
+        title: "Access Point Sync Failed",
+        description: "Failed to sync from S3 Access Point",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const syncFromS3 = async () => {
     try {
       setSyncing(true);
@@ -271,6 +298,14 @@ export function ImageManager() {
               <FolderOpen className="h-4 w-4 mr-2" />
             )}
             Auto Organize
+          </Button>
+          <Button onClick={syncFromAccessPoint} disabled={syncing} variant="outline">
+            {syncing ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Sync Access Point
           </Button>
           <Button onClick={syncFromS3} disabled={syncing}>
             {syncing ? (

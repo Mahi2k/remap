@@ -57,6 +57,13 @@ serve(async (req) => {
       });
     }
 
+    if (action === 'sync-access-point') {
+      const result = await syncFromAccessPoint(supabaseClient);
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (action === 'move-image' && categoryId && imageKey) {
       const result = await moveImageToCategory(supabaseClient, imageKey, categoryId);
       return new Response(JSON.stringify(result), {
@@ -264,4 +271,76 @@ async function updateS3Credentials(credentials: any) {
     success: true, 
     message: 'Credentials would be updated in production environment' 
   };
+}
+
+async function listS3AccessPointObjects(): Promise<S3Object[]> {
+  const awsAccessKeyId = Deno.env.get('AWS_ACCESS_KEY_ID');
+  const awsSecretAccessKey = Deno.env.get('AWS_SECRET_ACCESS_KEY');
+  const awsRegion = Deno.env.get('AWS_REGION');
+  
+  if (!awsAccessKeyId || !awsSecretAccessKey || !awsRegion) {
+    throw new Error('Missing AWS configuration');
+  }
+
+  // Using the access point alias provided
+  const accessPointAlias = 's3-remap-access-poin-kjk177d1mznin7tchb5cdtzh4qjesuse1b-s3alias';
+  const endpoint = `https://${accessPointAlias}.s3-accesspoint.${awsRegion}.amazonaws.com/`;
+  const date = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '');
+  
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: {
+      'Authorization': await createAwsSignature(awsAccessKeyId, awsSecretAccessKey, awsRegion, accessPointAlias, date),
+      'x-amz-date': date,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`S3 Access Point API error: ${response.statusText}`);
+  }
+
+  const xmlText = await response.text();
+  return parseS3ListResponse(xmlText);
+}
+
+async function syncFromAccessPoint(supabase: any) {
+  const objects = await listS3AccessPointObjects();
+  const synced = [];
+  const errors = [];
+
+  for (const obj of objects) {
+    if (!obj.Key) continue;
+
+    try {
+      // Check if image already exists
+      const { data: existing } = await supabase
+        .from('images')
+        .select('id')
+        .eq('s3_key', obj.Key)
+        .maybeSingle();
+
+      if (!existing) {
+        // Determine category based on key pattern
+        const categoryId = await determineCategoryFromKey(supabase, obj.Key);
+        
+        const { error } = await supabase
+          .from('images')
+          .insert({
+            s3_key: obj.Key,
+            original_name: obj.Key.split('/').pop() || obj.Key,
+            category_id: categoryId,
+            file_size: obj.Size,
+            is_processed: true,
+          });
+
+        if (error) throw error;
+        synced.push(obj.Key);
+      }
+    } catch (error) {
+      console.error(`Error syncing ${obj.Key} from access point:`, error);
+      errors.push({ key: obj.Key, error: error.message });
+    }
+  }
+
+  return { synced: synced.length, errors, source: 'access-point' };
 }
