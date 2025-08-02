@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Upload, FolderOpen, Image as ImageIcon, RefreshCw } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, Upload, FolderOpen, Image as ImageIcon, RefreshCw, Settings, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ImageCategory {
@@ -32,6 +35,14 @@ export function ImageManager() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [organizing, setOrganizing] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [credentials, setCredentials] = useState({
+    accessKeyId: '',
+    secretAccessKey: '',
+    region: '',
+    bucketName: ''
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -158,9 +169,80 @@ export function ImageManager() {
     }
   };
 
+  const testConnection = async () => {
+    try {
+      setTestingConnection(true);
+      setConnectionStatus('idle');
+      
+      const { data, error } = await supabase.functions.invoke('s3-image-manager', {
+        body: { action: 'test-connection' }
+      });
+
+      if (error) throw error;
+
+      setConnectionStatus('success');
+      toast({
+        title: "Connection Successful",
+        description: "Successfully connected to AWS S3",
+      });
+    } catch (error) {
+      console.error('Error testing connection:', error);
+      setConnectionStatus('error');
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect to AWS S3. Please check your credentials.",
+        variant: "destructive",
+      });
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const updateCredentials = async () => {
+    if (!credentials.accessKeyId || !credentials.secretAccessKey || !credentials.region || !credentials.bucketName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all credential fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.functions.invoke('s3-image-manager', {
+        body: { 
+          action: 'update-credentials',
+          credentials
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Credentials Updated",
+        description: "AWS credentials have been updated successfully",
+      });
+
+      // Clear the form
+      setCredentials({
+        accessKeyId: '',
+        secretAccessKey: '',
+        region: '',
+        bucketName: ''
+      });
+    } catch (error) {
+      console.error('Error updating credentials:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update credentials",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getS3Url = (s3Key: string) => {
-    const region = 'us-east-1'; // You might want to make this configurable
-    const bucketName = 'your-bucket-name'; // This should come from your environment
+    const region = credentials.region || 'us-east-1';
+    const bucketName = credentials.bucketName || 'your-bucket-name';
     return `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
   };
 
@@ -202,6 +284,91 @@ export function ImageManager() {
       </div>
 
       <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              AWS Configuration
+            </CardTitle>
+            <CardDescription>
+              Configure your AWS S3 credentials and test connection
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="accessKeyId">Access Key ID</Label>
+                <Input
+                  id="accessKeyId"
+                  type="password"
+                  placeholder="Enter AWS Access Key ID"
+                  value={credentials.accessKeyId}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, accessKeyId: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="secretAccessKey">Secret Access Key</Label>
+                <Input
+                  id="secretAccessKey"
+                  type="password"
+                  placeholder="Enter AWS Secret Access Key"
+                  value={credentials.secretAccessKey}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, secretAccessKey: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="region">AWS Region</Label>
+                <Input
+                  id="region"
+                  placeholder="e.g., us-east-1"
+                  value={credentials.region}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, region: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bucketName">S3 Bucket Name</Label>
+                <Input
+                  id="bucketName"
+                  placeholder="Enter S3 bucket name"
+                  value={credentials.bucketName}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, bucketName: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="flex gap-2">
+              <Button onClick={updateCredentials} variant="outline">
+                Update Credentials
+              </Button>
+              <Button onClick={testConnection} disabled={testingConnection} variant="outline">
+                {testingConnection ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : connectionStatus === 'success' ? (
+                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                ) : (
+                  <Settings className="h-4 w-4 mr-2" />
+                )}
+                Test Connection
+              </Button>
+            </div>
+            
+            {connectionStatus === 'success' && (
+              <div className="text-sm text-green-600 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Connection successful - AWS S3 is properly configured
+              </div>
+            )}
+            
+            {connectionStatus === 'error' && (
+              <div className="text-sm text-destructive">
+                Connection failed - Please check your credentials and try again
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

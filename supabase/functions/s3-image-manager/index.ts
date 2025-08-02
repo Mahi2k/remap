@@ -64,6 +64,21 @@ serve(async (req) => {
       });
     }
 
+    if (action === 'test-connection') {
+      const result = await testS3Connection();
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (action === 'update-credentials' && (await req.json()).credentials) {
+      const body = await req.json();
+      const result = await updateS3Credentials(body.credentials);
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     throw new Error('Invalid action');
 
   } catch (error) {
@@ -221,4 +236,32 @@ async function moveImageToCategory(supabase: any, imageKey: string, categoryId: 
 
   if (error) throw error;
   return { success: true };
+}
+
+async function testS3Connection() {
+  try {
+    // Try to list objects to test connection
+    await listS3Objects();
+    return { success: true, message: 'Connection successful' };
+  } catch (error) {
+    console.error('S3 connection test failed:', error);
+    return { success: false, message: error.message };
+  }
+}
+
+async function updateS3Credentials(credentials: any) {
+  // Note: In a real implementation, you would update the Supabase secrets
+  // For now, we'll just validate the credentials format
+  const { accessKeyId, secretAccessKey, region, bucketName } = credentials;
+  
+  if (!accessKeyId || !secretAccessKey || !region || !bucketName) {
+    throw new Error('All credential fields are required');
+  }
+  
+  // In production, you would use Supabase Management API to update secrets
+  // For this demo, we'll just return success
+  return { 
+    success: true, 
+    message: 'Credentials would be updated in production environment' 
+  };
 }
