@@ -78,7 +78,7 @@ serve(async (req) => {
       });
     }
 
-    if (action === 'update-credentials' && (await req.json()).credentials) {
+    if (action === 'update-credentials') {
       const body = await req.json();
       const result = await updateS3Credentials(body.credentials);
       return new Response(JSON.stringify(result), {
@@ -98,10 +98,10 @@ serve(async (req) => {
 });
 
 async function listS3Objects(): Promise<S3Object[]> {
-  const awsAccessKeyId = Deno.env.get('AWS_ACCESS_KEY_ID');
-  const awsSecretAccessKey = Deno.env.get('AWS_SECRET_ACCESS_KEY');
-  const awsRegion = Deno.env.get('AWS_REGION');
-  const bucketName = Deno.env.get('AWS_S3_BUCKET_NAME');
+  const awsAccessKeyId = Deno.env.get('ACCESS_KEY_ID');
+  const awsSecretAccessKey = Deno.env.get('SECRET_ACCESS_KEY');
+  const awsRegion = 'us-east-1';
+  const bucketName = Deno.env.get('S3_BUCKET_NAME');
 
   if (!awsAccessKeyId || !awsSecretAccessKey || !awsRegion || !bucketName) {
     throw new Error('Missing AWS configuration');
@@ -274,16 +274,16 @@ async function updateS3Credentials(credentials: any) {
 }
 
 async function listS3AccessPointObjects(): Promise<S3Object[]> {
-  const awsAccessKeyId = Deno.env.get('AWS_ACCESS_KEY_ID');
-  const awsSecretAccessKey = Deno.env.get('AWS_SECRET_ACCESS_KEY');
-  const awsRegion = Deno.env.get('AWS_REGION');
+  const awsAccessKeyId = Deno.env.get('ACCESS_KEY_ID');
+  const awsSecretAccessKey = Deno.env.get('SECRET_ACCESS_KEY');
+  const awsRegion = 'us-east-1';
   
-  if (!awsAccessKeyId || !awsSecretAccessKey || !awsRegion) {
+  if (!awsAccessKeyId || !awsSecretAccessKey) {
     throw new Error('Missing AWS configuration');
   }
 
   // Using the access point alias provided
-  const accessPointAlias = 's3-remap-access-poin-kjk177d1mznin7tchb5cdtzh4qjesuse1b-s3alias';
+  const accessPointAlias = Deno.env.get('S3_BUCKET_ACCESS_POINT_ALIAS') || 's3-remap-access-poin-kjk177d1mznin7tchb5cdtzh4qjesuse1b-s3alias';
   const endpoint = `https://${accessPointAlias}.s3-accesspoint.${awsRegion}.amazonaws.com/`;
   const date = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '');
   
