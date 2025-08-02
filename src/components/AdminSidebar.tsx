@@ -38,6 +38,7 @@ const menuItems = [
       { id: "portfolio", label: "Portfolio", icon: Image },
       { id: "customer-reviews", label: "Customer Reviews", icon: Star },
       { id: "company-contact", label: "Company Contact", icon: Phone },
+      { id: "images", label: "Image Manager", icon: Image },
     ]
   },
   {
