@@ -72,7 +72,8 @@ export function getPortfolioImagesFromFolders(): PortfolioImage[] {
         .replace(/\([^)]*\)/g, '') // Remove content in parentheses
         .replace(/\s+/g, ' ')      // Replace multiple spaces with single space
         .trim()                    // Remove leading/trailing spaces
-        .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
+        .toLowerCase()             // Convert to lowercase first
+        .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize first letter of each word
 
       // Map subcategory to main category
       let category = 'bedroom';
