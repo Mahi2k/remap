@@ -79,8 +79,8 @@ serve(async (req) => {
     }
 
     if (action === 'update-credentials') {
-      const body = await req.json();
-      const result = await updateS3Credentials(body.credentials);
+      const requestBody = await req.json();
+      const result = await updateS3Credentials(requestBody.credentials);
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -98,41 +98,118 @@ serve(async (req) => {
 });
 
 async function listS3Objects(): Promise<S3Object[]> {
+  console.log('Starting listS3Objects function');
   const awsAccessKeyId = Deno.env.get('ACCESS_KEY_ID');
   const awsSecretAccessKey = Deno.env.get('SECRET_ACCESS_KEY');
-  const awsRegion = 'us-east-1';
   const bucketName = Deno.env.get('S3_BUCKET_NAME');
+  const region = 'us-east-1';
 
-  if (!awsAccessKeyId || !awsSecretAccessKey || !awsRegion || !bucketName) {
+  console.log('Environment variables check:', {
+    hasAccessKey: !!awsAccessKeyId,
+    hasSecretKey: !!awsSecretAccessKey,
+    bucketName: bucketName
+  });
+
+  if (!awsAccessKeyId || !awsSecretAccessKey || !bucketName) {
     throw new Error('Missing AWS configuration');
   }
 
-  // Create AWS signature and make S3 API request
-  const endpoint = `https://s3.${awsRegion}.amazonaws.com/${bucketName}`;
-  const date = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '');
+  // Create AWS V4 signature
+  const host = `${bucketName}.s3.amazonaws.com`;
+  const endpoint = `https://${host}/`;
+  const method = 'GET';
+  const canonicalUri = '/';
+  const canonicalQuerystring = '';
   
+  const t = new Date();
+  const amzdate = t.toISOString().replace(/[:\-]|\.\d{3}/g, '');
+  const datestamp = amzdate.substring(0, 8);
+
+  // Create canonical headers
+  const canonicalHeaders = `host:${host}\nx-amz-date:${amzdate}\n`;
+  const signedHeaders = 'host;x-amz-date';
+  const payloadHash = 'UNSIGNED-PAYLOAD';
+
+  // Create canonical request
+  const canonicalRequest = `${method}\n${canonicalUri}\n${canonicalQuerystring}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+  // Create string to sign
+  const algorithm = 'AWS4-HMAC-SHA256';
+  const credentialScope = `${datestamp}/${region}/s3/aws4_request`;
+  const stringToSign = `${algorithm}\n${amzdate}\n${credentialScope}\n${await sha256(canonicalRequest)}`;
+
+  // Create signing key and signature
+  const signingKey = await getSignatureKey(awsSecretAccessKey, datestamp, region, 's3');
+  const signature = await hmacSha256(signingKey, stringToSign);
+
+  // Create authorization header
+  const authorizationHeader = `${algorithm} Credential=${awsAccessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  console.log('Making S3 request to:', endpoint);
+
   const response = await fetch(endpoint, {
     method: 'GET',
     headers: {
-      'Authorization': await createAwsSignature(awsAccessKeyId, awsSecretAccessKey, awsRegion, bucketName, date),
-      'x-amz-date': date,
+      'Host': host,
+      'X-Amz-Date': amzdate,
+      'Authorization': authorizationHeader,
     },
   });
 
+  console.log('S3 API response status:', response.status, response.statusText);
+
   if (!response.ok) {
-    throw new Error(`S3 API error: ${response.statusText}`);
+    const responseText = await response.text();
+    console.log('S3 API error response:', responseText);
+    throw new Error(`S3 API error: ${response.statusText} - ${responseText}`);
   }
 
   const xmlText = await response.text();
+  console.log('S3 XML response length:', xmlText.length);
   return parseS3ListResponse(xmlText);
 }
 
-async function createAwsSignature(accessKey: string, secretKey: string, region: string, bucket: string, date: string): Promise<string> {
-  // Simplified AWS signature - in production, use proper AWS SDK
-  const algorithm = 'AWS4-HMAC-SHA256';
-  const credential = `${accessKey}/${date.slice(0, 8)}/${region}/s3/aws4_request`;
-  
-  return `${algorithm} Credential=${credential}, SignedHeaders=host;x-amz-date, Signature=placeholder`;
+// Helper functions for AWS signature
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hmacSha256(key: Uint8Array, message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    key,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgBuffer);
+  const hashArray = Array.from(new Uint8Array(signature));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function getSignatureKey(key: string, dateStamp: string, regionName: string, serviceName: string): Promise<Uint8Array> {
+  const kDate = await hmacSha256Raw(new TextEncoder().encode(`AWS4${key}`), dateStamp);
+  const kRegion = await hmacSha256Raw(kDate, regionName);
+  const kService = await hmacSha256Raw(kRegion, serviceName);
+  const kSigning = await hmacSha256Raw(kService, 'aws4_request');
+  return kSigning;
+}
+
+async function hmacSha256Raw(key: Uint8Array, message: string): Promise<Uint8Array> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    key,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgBuffer);
+  return new Uint8Array(signature);
 }
 
 function parseS3ListResponse(xml: string): S3Object[] {
@@ -148,6 +225,14 @@ function parseS3ListResponse(xml: string): S3Object[] {
   });
   
   return objects;
+}
+
+async function createAwsSignature(accessKey: string, secretKey: string, region: string, bucket: string, date: string): Promise<string> {
+  // Simplified AWS signature - in production, use proper AWS SDK
+  const algorithm = 'AWS4-HMAC-SHA256';
+  const credential = `${accessKey}/${date.slice(0, 8)}/${region}/s3/aws4_request`;
+  
+  return `${algorithm} Credential=${credential}, SignedHeaders=host;x-amz-date, Signature=placeholder`;
 }
 
 async function syncImagesToDatabase(supabase: any) {
@@ -274,9 +359,10 @@ async function updateS3Credentials(credentials: any) {
 }
 
 async function listS3AccessPointObjects(): Promise<S3Object[]> {
+  console.log('Starting listS3AccessPointObjects function');
   const awsAccessKeyId = Deno.env.get('ACCESS_KEY_ID');
   const awsSecretAccessKey = Deno.env.get('SECRET_ACCESS_KEY');
-  const awsRegion = 'us-east-1';
+  const region = 'us-east-1';
   
   if (!awsAccessKeyId || !awsSecretAccessKey) {
     throw new Error('Missing AWS configuration');
@@ -284,22 +370,54 @@ async function listS3AccessPointObjects(): Promise<S3Object[]> {
 
   // Using the access point alias provided
   const accessPointAlias = Deno.env.get('S3_BUCKET_ACCESS_POINT_ALIAS') || 's3-remap-access-poin-kjk177d1mznin7tchb5cdtzh4qjesuse1b-s3alias';
-  const endpoint = `https://${accessPointAlias}.s3-accesspoint.${awsRegion}.amazonaws.com/`;
-  const date = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '');
+  const host = `${accessPointAlias}.s3-accesspoint.${region}.amazonaws.com`;
+  const endpoint = `https://${host}/`;
+  
+  const t = new Date();
+  const amzdate = t.toISOString().replace(/[:\-]|\.\d{3}/g, '');
+  const datestamp = amzdate.substring(0, 8);
+
+  // Create canonical headers
+  const canonicalHeaders = `host:${host}\nx-amz-date:${amzdate}\n`;
+  const signedHeaders = 'host;x-amz-date';
+  const payloadHash = 'UNSIGNED-PAYLOAD';
+
+  // Create canonical request
+  const canonicalRequest = `GET\n/\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+  // Create string to sign
+  const algorithm = 'AWS4-HMAC-SHA256';
+  const credentialScope = `${datestamp}/${region}/s3/aws4_request`;
+  const stringToSign = `${algorithm}\n${amzdate}\n${credentialScope}\n${await sha256(canonicalRequest)}`;
+
+  // Create signing key and signature
+  const signingKey = await getSignatureKey(awsSecretAccessKey, datestamp, region, 's3');
+  const signature = await hmacSha256(signingKey, stringToSign);
+
+  // Create authorization header
+  const authorizationHeader = `${algorithm} Credential=${awsAccessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  console.log('Making S3 Access Point request to:', endpoint);
   
   const response = await fetch(endpoint, {
     method: 'GET',
     headers: {
-      'Authorization': await createAwsSignature(awsAccessKeyId, awsSecretAccessKey, awsRegion, accessPointAlias, date),
-      'x-amz-date': date,
+      'Host': host,
+      'X-Amz-Date': amzdate,
+      'Authorization': authorizationHeader,
     },
   });
 
+  console.log('S3 Access Point API response status:', response.status, response.statusText);
+
   if (!response.ok) {
-    throw new Error(`S3 Access Point API error: ${response.statusText}`);
+    const responseText = await response.text();
+    console.log('S3 Access Point API error response:', responseText);
+    throw new Error(`S3 Access Point API error: ${response.statusText} - ${responseText}`);
   }
 
   const xmlText = await response.text();
+  console.log('S3 Access Point XML response length:', xmlText.length);
   return parseS3ListResponse(xmlText);
 }
 
