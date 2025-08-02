@@ -12,7 +12,8 @@ export const IMAGE_CATEGORIES = {
 export const PORTFOLIO_SUBCATEGORIES = {
   RESIDENTIAL: 'residential',
   COMMERCIAL: 'commercial', 
-  RENOVATION: 'renovation'
+  RENOVATION: 'renovation',
+  BEDROOMS: 'bedrooms'
 } as const;
 
 /**

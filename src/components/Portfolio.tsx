@@ -26,10 +26,12 @@ const Portfolio = () => {
       if (project.category) {
         switch (project.category.toLowerCase()) {
           case 'living':
-          case 'bedroom': 
           case 'kitchen':
           case 'bathroom':
             subcategory = PORTFOLIO_SUBCATEGORIES.RESIDENTIAL;
+            break;
+          case 'bedroom':
+            subcategory = PORTFOLIO_SUBCATEGORIES.BEDROOMS;
             break;
           case 'office':
           case 'commercial':
