@@ -101,7 +101,7 @@ async function listS3Objects(): Promise<S3Object[]> {
   }
 
   // Create AWS signature and make S3 API request
-  const endpoint = `https://${bucketName}.s3.${awsRegion}.amazonaws.com/`;
+  const endpoint = `https://s3.${awsRegion}.amazonaws.com/${bucketName}`;
   const date = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '');
   
   const response = await fetch(endpoint, {
