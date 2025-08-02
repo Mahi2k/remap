@@ -68,6 +68,10 @@ export function getPortfolioImagesFromFolders(): PortfolioImage[] {
       const title = filename
         .replace(/\.[^/.]+$/, '') // Remove extension
         .replace(/[-_]/g, ' ')     // Replace dashes/underscores with spaces
+        .replace(/\d+/g, '')       // Remove numbers
+        .replace(/\([^)]*\)/g, '') // Remove content in parentheses
+        .replace(/\s+/g, ' ')      // Replace multiple spaces with single space
+        .trim()                    // Remove leading/trailing spaces
         .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
 
       // Map subcategory to main category
