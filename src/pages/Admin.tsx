@@ -15,7 +15,7 @@ import { UsersList, UserRolesManager } from "@/components/admin/UserManagement";
 import { Settings } from "@/components/admin/Settings";
 import CustomerReviewsManagement from "@/components/admin/CustomerReviewsManagement";
 import StatsManager from "@/components/admin/StatsManager";
-import { ImageManager } from "@/components/admin/ImageManager";
+
 import type { Database } from "@/integrations/supabase/types";
 
 type HeroContent = Database['public']['Tables']['hero_content']['Row'];
@@ -142,8 +142,6 @@ export default function Admin() {
         return <PortfolioManager items={portfolioItems} onUpdate={loadAllContent} />;
       case 'customer-reviews':
         return <CustomerReviewsManagement />;
-      case 'images':
-        return <ImageManager />;
       case 'contact':
         return <ContactManager submissions={contactSubmissions} onUpdate={loadAllContent} />;
       case 'company-contact':
