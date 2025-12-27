@@ -15,6 +15,7 @@ import { UsersList, UserRolesManager } from "@/components/admin/UserManagement";
 import { Settings } from "@/components/admin/Settings";
 import CustomerReviewsManagement from "@/components/admin/CustomerReviewsManagement";
 import StatsManager from "@/components/admin/StatsManager";
+import CommunicationSettingsManager from "@/components/admin/CommunicationSettingsManager";
 
 import type { Database } from "@/integrations/supabase/types";
 
@@ -146,6 +147,8 @@ export default function Admin() {
         return <ContactManager submissions={contactSubmissions} onUpdate={loadAllContent} />;
       case 'company-contact':
         return <CompanyContactManager contactInfo={companyContactInfo} onUpdate={loadAllContent} />;
+      case 'communication-settings':
+        return <CommunicationSettingsManager />;
       case 'users-list':
         return <UsersList />;
       case 'user-roles':
