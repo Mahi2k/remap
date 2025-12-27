@@ -34,24 +34,12 @@ const PORTFOLIO_IMAGES = {
     'Mordern Living Room-01 (6).jpg',
     'Mordern Living Room-01 (7).jpg'
   ],
-  [PORTFOLIO_SUBCATEGORIES.KITCHENS]: [
-    // Add kitchen images here when available
-  ],
-  [PORTFOLIO_SUBCATEGORIES.BATHROOMS]: [
-    // Add bathroom images here when available
-  ],
-  [PORTFOLIO_SUBCATEGORIES.OFFICES]: [
-    // Add office images here when available
-  ],
-  [PORTFOLIO_SUBCATEGORIES.RESIDENTIAL]: [
-    // Add residential images here when available
-  ],
-  [PORTFOLIO_SUBCATEGORIES.COMMERCIAL]: [
-    // Add commercial images here when available
-  ],
-  [PORTFOLIO_SUBCATEGORIES.RENOVATION]: [
-    // Add renovation images here when available
-  ]
+  [PORTFOLIO_SUBCATEGORIES.KITCHENS]: [],
+  [PORTFOLIO_SUBCATEGORIES.BATHROOMS]: [],
+  [PORTFOLIO_SUBCATEGORIES.OFFICES]: [],
+  [PORTFOLIO_SUBCATEGORIES.RESIDENTIAL]: [],
+  [PORTFOLIO_SUBCATEGORIES.COMMERCIAL]: [],
+  [PORTFOLIO_SUBCATEGORIES.RENOVATION]: []
 };
 
 /**
@@ -62,7 +50,9 @@ export function getPortfolioImagesFromFolders(): PortfolioImage[] {
 
   Object.entries(PORTFOLIO_IMAGES).forEach(([subcategory, imageFiles]) => {
     imageFiles.forEach((filename, index) => {
-      const imagePath = `/image-collection/${IMAGE_CATEGORIES.PORTFOLIO}/${subcategory}/${filename}`;
+      // Encode the filename to handle spaces and special characters
+      const encodedFilename = encodeURIComponent(filename);
+      const imagePath = `/image-collection/${IMAGE_CATEGORIES.PORTFOLIO}/${subcategory}/${encodedFilename}`;
       
       // Generate title from filename
       const title = filename
