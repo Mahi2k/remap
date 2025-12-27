@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Mail } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ContactForm } from './ContactForm';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GetQuoteDialogProps {
   children: React.ReactNode;
@@ -11,11 +12,27 @@ interface GetQuoteDialogProps {
 
 export const GetQuoteDialog = ({ children }: GetQuoteDialogProps) => {
   const [selectedOption, setSelectedOption] = useState<'whatsapp' | 'form' | null>(null);
+  const [whatsappNumber, setWhatsappNumber] = useState<string>('918087247972');
+
+  useEffect(() => {
+    const fetchWhatsAppNumber = async () => {
+      const { data } = await supabase
+        .from('company_contact_info')
+        .select('field_value')
+        .eq('field_name', 'whatsapp')
+        .eq('is_active', true)
+        .single();
+      
+      if (data?.field_value) {
+        setWhatsappNumber(data.field_value.replace(/\D/g, ''));
+      }
+    };
+    fetchWhatsAppNumber();
+  }, []);
 
   const handleWhatsAppClick = () => {
-    const whatsappNumber = '+918087247972';
     const message = encodeURIComponent('Hi! I would like to get a quote for my interior design project.');
-    const whatsappUrl = `https://wa.me/${whatsappNumber.replace('+', '')}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
