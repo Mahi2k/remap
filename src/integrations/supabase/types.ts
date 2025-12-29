@@ -255,10 +255,15 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          features: string[] | null
+          full_description: string | null
           icon_name: string | null
           id: string
           image_url: string | null
           is_active: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          slug: string | null
           sort_order: number | null
           title: string
           updated_at: string
@@ -266,10 +271,15 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          features?: string[] | null
+          full_description?: string | null
           icon_name?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          slug?: string | null
           sort_order?: number | null
           title: string
           updated_at?: string
@@ -277,10 +287,15 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          features?: string[] | null
+          full_description?: string | null
           icon_name?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          slug?: string | null
           sort_order?: number | null
           title?: string
           updated_at?: string
