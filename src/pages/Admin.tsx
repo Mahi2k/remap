@@ -16,6 +16,7 @@ import { Settings } from "@/components/admin/Settings";
 import CustomerReviewsManagement from "@/components/admin/CustomerReviewsManagement";
 import StatsManager from "@/components/admin/StatsManager";
 import CommunicationSettingsManager from "@/components/admin/CommunicationSettingsManager";
+import ServicesManager from "@/components/admin/ServicesManager";
 
 import type { Database } from "@/integrations/supabase/types";
 
@@ -138,7 +139,7 @@ export default function Admin() {
       case 'stats':
         return <StatsManager />;
       case 'services':
-        return <ServicesManager services={services} onUpdate={loadAllContent} />;
+        return <ServicesManager />;
       case 'portfolio':
         return <PortfolioManager items={portfolioItems} onUpdate={loadAllContent} />;
       case 'customer-reviews':
@@ -510,180 +511,6 @@ function AboutContentManager({ content, onUpdate }: { content: AboutContent[], o
   );
 }
 
-// Services Manager Component
-function ServicesManager({ services, onUpdate }: { services: Service[], onUpdate: () => void }) {
-  const [editingItem, setEditingItem] = useState<Service | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    icon_name: '',
-    image_url: '',
-    sort_order: 0,
-    is_active: true
-  });
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      if (editingItem) {
-        await supabase
-          .from('services')
-          .update(formData)
-          .eq('id', editingItem.id);
-        toast({ title: "Success", description: "Service updated successfully." });
-      } else {
-        await supabase
-          .from('services')
-          .insert([formData]);
-        toast({ title: "Success", description: "Service created successfully." });
-      }
-      
-      setEditingItem(null);
-      setFormData({ title: '', description: '', icon_name: '', image_url: '', sort_order: 0, is_active: true });
-      onUpdate();
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to save service.", variant: "destructive" });
-    }
-  };
-
-  const handleEdit = (item: Service) => {
-    setEditingItem(item);
-    setFormData({
-      title: item.title,
-      description: item.description || '',
-      icon_name: item.icon_name || '',
-      image_url: item.image_url || '',
-      sort_order: item.sort_order || 0,
-      is_active: item.is_active || true
-    });
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await supabase.from('services').delete().eq('id', id);
-      toast({ title: "Success", description: "Service deleted successfully." });
-      onUpdate();
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to delete service.", variant: "destructive" });
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{editingItem ? 'Edit' : 'Create'} Service</CardTitle>
-          <CardDescription>
-            Manage services offered
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-              />
-            </div>
-            <div>
-              <Label htmlFor="icon_name">Icon Name (Lucide icon)</Label>
-              <Input
-                id="icon_name"
-                value={formData.icon_name}
-                onChange={(e) => setFormData({ ...formData, icon_name: e.target.value })}
-                placeholder="e.g., home, wrench, palette"
-              />
-            </div>
-            <div>
-              <Label htmlFor="image_url">Image URL</Label>
-              <Input
-                id="image_url"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="sort_order">Sort Order</Label>
-              <Input
-                id="sort_order"
-                type="number"
-                value={formData.sort_order}
-                onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="is_active"
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-              />
-              <Label htmlFor="is_active">Active</Label>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit">
-                {editingItem ? 'Update' : 'Create'}
-              </Button>
-              {editingItem && (
-                <Button type="button" variant="outline" onClick={() => {
-                  setEditingItem(null);
-                  setFormData({ title: '', description: '', icon_name: '', image_url: '', sort_order: 0, is_active: true });
-                }}>
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Existing Services</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {services.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <h3 className="font-semibold">{item.title}</h3>
-                  <p className="text-muted-foreground line-clamp-2">{item.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant={item.is_active ? "default" : "secondary"}>
-                      {item.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                    <Badge variant="outline">Order: {item.sort_order}</Badge>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
-                    Edit
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDelete(item.id)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
 
 // Portfolio Manager Component
 function PortfolioManager({ items, onUpdate }: { items: PortfolioItem[], onUpdate: () => void }) {
